@@ -1,5 +1,5 @@
-ARG PYTHON_PACKAGE_VERSION=3.9
-FROM python:$PYTHON_PACKAGE_VERSION as devpi
+ARG PYTHON_IMAGE=python:3.9
+FROM $PYTHON_IMAGE as devpi
 
 RUN pip install --quiet --upgrade devpi-server
 

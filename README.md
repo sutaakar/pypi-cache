@@ -17,9 +17,9 @@ Build an image using Dockerfile present in current working directory
 ```bash
 podman build -t <image_name> .
 ```
-Alternatively you can specify version of Python packages to be pulled by providing build parameter `PYTHON_PACKAGE_VERSION`.
+Alternatively you can specify Python base image, used as environment detected by pip to pull dependencies for, by providing build parameter `PYTHON_IMAGE`.
 ```bash
-podman build -t <image_name> --build-arg PYTHON_PACKAGE_VERSION=3.8 .
+podman build -t <image_name> --build-arg PYTHON_IMAGE=pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime .
 ```
 
 Run container instance using image created above by port forwarding container port `3141` to container host's port `3141` 

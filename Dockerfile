@@ -1,31 +1,29 @@
-ARG PYTHON_IMAGE=python:3.9
-FROM $PYTHON_IMAGE as devpi
+FROM registry.access.redhat.com/ubi9/nginx-122
 
+USER root
+
+# Install Python and Pip
+RUN dnf install -y python311 wget
+RUN wget https://bootstrap.pypa.io/get-pip.py && python3 ./get-pip.py
+
+# Initialize Devpi in /devpi folder
 RUN pip install --quiet --upgrade devpi-server
-
-RUN devpi-server --version
-
 RUN mkdir -p /devpi
-
 RUN devpi-init --serverdir /devpi
 
-COPY requirements.txt ./requirements.txt
-COPY start-devpi.sh ./start-devpi.sh
-RUN chmod +x start-devpi.sh
-RUN ./start-devpi.sh
+# Allow root group to access devpi folder
+RUN chgrp -R 0 /devpi && \
+    chmod -R g+rwX /devpi
 
-RUN chmod 777 -Rv /devpi
+# Allow root group to access /etc/nginx/certs folder
+RUN mkdir /etc/nginx/certs
+RUN chgrp -R 0 /etc/nginx/certs && \
+    chmod -R g+rwX /etc/nginx/certs
 
-FROM python:3.9-alpine
+# Provide Nginx Devpi configuration in expected path
+COPY nginx-devpi.conf "${NGINX_CONFIGURATION_PATH}"
 
-RUN pip install --quiet --upgrade devpi-server && \
-         devpi-server --version
-
-# copy installed packages from builder
-COPY --from=devpi /devpi /devpi
-RUN chmod 777 -v /devpi
-
-USER 65532:65532
+USER 65532:0
 
 COPY entrypoint.sh /app/entrypoint.sh
 ENTRYPOINT ["/app/entrypoint.sh"]
